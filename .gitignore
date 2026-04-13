@@ -1,0 +1,17 @@
+#environments
+.venv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Data files 
+*.csv
+*.parquet
+
+# VS Code
+.vscode/
