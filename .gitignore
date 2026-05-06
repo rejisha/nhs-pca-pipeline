@@ -1,10 +1,6 @@
-#environments
-.venv
-.venv/
-venv/
-env/
 .env
-.env/
+*.key
+*.pem
 
 # Python
 __pycache__/
@@ -14,9 +10,33 @@ __pycache__/
 venv/
 *.egg-info/
 
-# Data files 
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/profiles.yml
+
+# dbt generated folders
+gold/target/
+gold/dbt_packages/
+gold/logs/
+
+# Logs
+logs/
+
+
+# Airflow
+airflow.db
+airflow/logs/
+
+# Data files — don't commit raw NHS data
 *.csv
 *.parquet
+data/
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # VS Code
 .vscode/

@@ -5,7 +5,7 @@ azure-storage-blob==12.19.0
 azure-identity==1.15.0
 python-dotenv==1.0.0
 requests==2.31.0
-dbt-core==1.7.0
-dbt-sqlserver==1.7.0
+dbt-core==1.7.2
+dbt-sqlserver==1.7.2
 apache-airflow==2.8.0
 pytest==8.0.0
