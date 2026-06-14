@@ -41,7 +41,12 @@ def get_spark_session(app_name: str = "NHS_Prescribing_Pipeline") -> SparkSessio
         )
 
         # Downloads Delta Lake JAR automatically from Maven
-        .config("spark.jars.packages", "io.delta:delta-spark_2.12:3.2.0") 
+        .config(
+            "spark.jars.packages",
+            "io.delta:delta-spark_2.12:3.2.0,"
+            "org.apache.hadoop:hadoop-azure:3.3.4,"
+            "com.microsoft.azure:azure-storage:8.6.6"
+        )
 
         # Forces Spark to use localhost instead of your network IP
         # Prevents Windows Firewall from blocking the connection

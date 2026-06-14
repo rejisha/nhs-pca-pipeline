@@ -29,10 +29,15 @@ logs/
 airflow.db
 airflow/logs/
 
-# Data files — don't commit raw NHS data
+# Data files
 *.csv
 *.parquet
 data/
+
+# Test files
+test*
+/test_*
+test_*.py
 
 # OS files
 .DS_Store

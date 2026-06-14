@@ -1,6 +1,6 @@
 import logging
 from ingestion.download_pca import run_download
-from ingestion.upload_to_blob import run_upload
+from ingestion.upload_bronze_to_blob import run_upload
 
 logging.basicConfig(
     level=logging.INFO,

@@ -1,0 +1,113 @@
+version: 2
+
+models:
+  - name: dim_bnf
+    description: "One row per unique BNF drug presentation in the NHS dataset"
+    columns:
+      - name: bnf_id
+        description: "Surrogate primary key, generated via MD5 hash of bnf_code"
+        tests:
+          - unique
+          - not_null
+      - name: bnf_code
+        description: "BNF presentation code"
+        tests:
+          - not_null
+      - name: bnf_description
+        description: "Full drug presentation name"
+      - name: bnf_chemical_substance
+        description: "Chemical substance name for the presentation"
+      - name: bnf_chapter_name
+        description: "BNF chapter name (therapeutic classification)"
+      - name: bnf_chapter_code
+        description: "BNF chapter code"
+      - name: bnf_section_code
+        description: "BNF section code"
+
+  - name: dim_region
+    description: "One row per NHS region"
+    columns:
+      - name: region_id
+        description: "Surrogate primary key, generated via MD5 hash of region_name"
+        tests:
+          - unique
+          - not_null
+      - name: region_name
+        description: "Full NHS region name"
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_time
+    description: "One row per year-month period in the dataset"
+    columns:
+      - name: period_id
+        description: "Surrogate primary key, generated via MD5 hash of period"
+        tests:
+          - unique
+          - not_null
+      - name: period
+        description: "Year-month as integer e.g. 202601"
+        tests:
+          - not_null
+          - unique
+      - name: year
+        description: "Calendar year"
+        tests:
+          - not_null
+      - name: month
+        description: "Calendar month (1-12)"
+        tests:
+          - not_null
+      - name: prescription_month
+        description: "First day of the prescription month as a date"
+      - name: financial_year
+        description: "NHS financial year e.g. 2025/26"
+
+  - name: fact_prescriptions
+    description: "One row per prescription record at BNF presentation, region and month grain. Contains all metrics and foreign keys to dimensions."
+    columns:
+      - name: prescription_id
+        description: "Surrogate primary key for the fact table"
+        tests:
+          - unique
+          - not_null
+      - name: bnf_id
+        description: "Foreign key to dim_bnf"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_bnf')
+              field: bnf_id
+      - name: region_id
+        description: "Foreign key to dim_region"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_region')
+              field: region_id
+      - name: period_id
+        description: "Foreign key to dim_time"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_time')
+              field: period_id
+      - name: icb_code
+        description: "Integrated Care Board code"
+      - name: icb_name
+        description: "Integrated Care Board name"
+      - name: prescription_month
+        description: "Month the prescription was issued"
+      - name: financial_year
+        description: "NHS financial year e.g. 2025/26"
+      - name: items_prescribed
+        description: "Number of items prescribed"
+        tests:
+          - not_null
+      - name: net_ingredient_cost
+        description: "Net Ingredient Cost (NIC) in GBP"
+        tests:
+          - not_null
+      - name: total_quantity
+        description: "Total quantity prescribed"

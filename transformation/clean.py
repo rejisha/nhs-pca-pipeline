@@ -17,7 +17,7 @@ The cleaning and validation steps include:
 10. Write the cleaned and validated data to the Silver layer in Delta Lake format by year/month
 """
 
-
+import os
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -45,7 +45,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 BRONZE_PATH = Path(__file__).parent.parent / "data" / "raw" 
-SILVER_PATH = Path(__file__).parent.parent / "data" / "silver" / "pca"
+# SILVER_PATH = Path(__file__).parent.parent / "data" / "silver" / "pca"
+
+STORAGE_ACCOUNT = os.getenv("BLOB_STORAGE_NAME")   
+STORAGE_KEY     = os.getenv("BLOB_ACCOUNT_KEY")    
+CONTAINER_NAME  = os.getenv("CONTAINER_NAME", "nhs-pipeline")
+
+# wasbs:// is the Azure Blob protocol PySpark understands
+SILVER_PATH = f"wasbs://{CONTAINER_NAME}@{STORAGE_ACCOUNT}.blob.core.windows.net/silver/pca"
 
 # Step 1: Read raw CSV files from Bronze layer
 def read_raw_data(spark: SparkSession, file_path: Path) -> DataFrame:
@@ -145,19 +152,19 @@ def parse_and_standardize_dates(df: DataFrame) -> DataFrame:
      
     df = (
         df
-        # Extract year: "202501" → 2025
+        # Extract year: "202501" -> 2025
         .withColumn(
             "year",
             F.substring(F.col("year_month"), 1, 4).cast(IntegerType())
         )
 
-        # Extract month: "202501" → 1
+        # Extract month: "202501" -> 1
         .withColumn(
             "month",
             F.substring(F.col("year_month"), 5, 2).cast(IntegerType())
         )
 
-        # Create proper date: "202501" → 2025-01-01
+        # Create proper date: "202501" -> 2025-01-01
         .withColumn(
             "prescription_month",
             F.to_date(F.col("year_month"), "yyyyMM")
@@ -307,28 +314,27 @@ def validate_data_quality(df: DataFrame, source_file: str) -> bool:
 
 
 # Step 10: Write the cleaned and validated data to the Silver layer in Delta Lake format by year/month
-def write_silver_delta(df: DataFrame, output_path: str) -> None:
+def write_silver_delta(df: DataFrame, spark: SparkSession, output_path: str) -> None:
     """
-    Writes the cleaned DataFrame to Silver as Delta Lake format,
+    Writes cleaned DataFrame to Silver as Delta Lake format on Azure Blob,
     partitioned by year and month.
     """
-    logger.info(f"Writing Silver Delta Lake to: {output_path}")
+
+    # Tell Spark how to authenticate with Azure Blob Storage
+    # This must be set on the SparkContext before any Blob write
+    spark.conf.set(
+        f"fs.azure.account.key.{STORAGE_ACCOUNT}.blob.core.windows.net",
+        STORAGE_KEY
+    )
+
+    logger.info(f"Writing Silver Delta Lake to Azure Blob: {output_path}")
 
     (
         df.write
         .format("delta")
-        # Delta Lake format = Parquet + transaction log
-
         .mode("overwrite")
-        # Replace existing data for this partition
-
         .option("partitionOverwriteMode", "dynamic")
-        # Only overwrite partitions present in this DataFrame
-        # Leave all other partitions untouched
-
         .partitionBy("year", "month")
-        # Creates: data/silver/pca/year=2025/month=1/part-00000.parquet
-
         .save(output_path)
     )
 
@@ -336,10 +342,10 @@ def write_silver_delta(df: DataFrame, output_path: str) -> None:
 
 
 
-# Main function to run the full Bronze → Silver transformation
+# Main function to run the full Bronze -> Silver transformation
 def run_silver_transform(bronze_files: list = None) -> bool:
     """
-    Main entry point. Runs the full Bronze → Silver transformation.
+    Main entry point. Runs the full Bronze -> Silver transformation.
 
     """
     spark = get_spark_session("NHS_PCA_Silver_Transform")
@@ -382,7 +388,7 @@ def run_silver_transform(bronze_files: list = None) -> bool:
                     continue
 
                 # Step 10: Write to Silver
-                write_silver_delta(df, str(SILVER_PATH))
+                write_silver_delta(df, spark, str(SILVER_PATH))
 
                 logger.info(f"Successfully processed: {source_file}")
 
@@ -392,15 +398,15 @@ def run_silver_transform(bronze_files: list = None) -> bool:
                 continue
 
     finally:
-        # Always stop Spark — even if an error occurred
+        # Always stop Spark - even if an error occurred
         stop_spark_session(spark)
 
     return all_success
 
 
 # Testing
-if __name__ == "__main__":
-    success = run_silver_transform()
-    print(f"\nSilver transformation: {'SUCCESS' if success else 'FAILED'}")
-    print(f"Output: {SILVER_PATH}")
-    print("\nNext step: set up dbt for the Gold layer")
+# if __name__ == "__main__":
+#     success = run_silver_transform()
+#     print(f"\nSilver transformation: {'SUCCESS' if success else 'FAILED'}")
+#     print(f"Output: {SILVER_PATH}")
+#     print("\nNext step: set up dbt for the Gold layer")

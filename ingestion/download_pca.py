@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import logging
 from pathlib import Path
@@ -29,33 +30,40 @@ RAW_DATA_DIR = Path(__file__).parent.parent/"data"/"raw"
 # RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 def get_available_months(num_months: int = 3) -> list[str]:
-    
-    months = []
-    start_date = datetime.now().replace(day=1) - timedelta(days=60)
-
-    for i in range(3):
-        month = start_date.replace(day=1) # Calculate the month by going back i months from start_date
-        target = (start_date - timedelta(days=i * 31)).replace(day=1) # Go back i months — subtract i*30 days then pin to 1st of month
-        months.append(target.strftime("%Y%m"))  # format as YYYYMM
-
-    logger.info(f"Target months to download: {months}")
-    return months
-
-def build_download_url(year_month: str) -> str:
-
+    """Query the NHSBSA portal and return the latest available year_month strings."""
     response = requests.get(NHS_API_URL)
     response.raise_for_status()
     
     resources = response.json()["result"]["resources"]
     
-    search_term = f"pca_{year_month.lower()}.csv"  # e.g. "pca_202601.csv"
+    months = []
+    for resource in resources:
+        url = resource.get("url", "")
+        name = resource.get("name", "")
+        
+        for text in [url.lower(), name.lower()]:
+            match = re.search(r'pca_(\d{6})\.csv', text)
+            if match:
+                months.append(match.group(1))
+                break
+    
+    months = sorted(set(months), reverse=True)[:num_months]
+    logging.info(f"Latest available months on portal: {months}")
+    return months
+
+def build_download_url(year_month: str) -> str:
+    response = requests.get(NHS_API_URL)
+    response.raise_for_status()
+    
+    resources = response.json()["result"]["resources"]
+    
+    search_term = f"pca_{year_month.lower()}.csv"
     
     for resource in resources:
         url = resource.get("url", "")
         name = resource.get("name", "")
         
-        # check both the URL and the resource name
-        if search_term in url.lower() or year_month in name:
+        if search_term in url.lower() or year_month in name.lower():
             return url
     
     raise ValueError(f"No resource found for {year_month}")

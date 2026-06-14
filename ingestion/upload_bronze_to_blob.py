@@ -47,10 +47,10 @@ def ensure_container_exists(blob_service_client: BlobServiceClient) -> Container
 
 def build_blob_path(filename: str) -> str:
    
-    stem = Path(filename).stem  # eg. 'PCA_202501'
-    year_month = stem[-6:]      # eg. '202501'
-    year = year_month[:4]       # eg. '2025'
-    month = year_month[4:]      # eg. '01'
+    stem = Path(filename).stem  # 'PCA_202501'
+    year_month = stem[-6:]      # '202501'
+    year = year_month[:4]       # '2025'
+    month = year_month[4:]      # '01'
 
     blob_path = f"bronze/pca/year={year}/month={month}/{filename}"
     return blob_path
@@ -107,7 +107,7 @@ def run_upload(local_files: list[Path]) -> dict:
     logger.info(f"NHS PCA Upload — starting ({len(local_files)} files)")
     logger.info("=" * 50)
 
-    # Create Azure connection once
+    # Create Azure connection
     blob_service_client = get_blob_service_client()
     container_client = ensure_container_exists(blob_service_client)
 
