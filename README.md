@@ -35,24 +35,6 @@ The pipeline ingests raw CSVs from the NHSBSA Open Data Portal, transforms them 
 
 ## Architecture
 
-```
-[ NHSBSA Open Data Portal ]
-           │
-           ▼
-   [ Bronze Layer ]  ── Raw CSV → Delta Lake on Azure Blob Storage
-           │
-           ▼
-   [ Silver Layer ]  ── Cleaned & typed → Delta Lake on Azure Blob Storage
-           │
-           ▼
-   [ Gold Layer ]    ── Star schema → Azure SQL Database (dbt models)
-           │
-           ▼
-   [ Power BI ]      ── Dashboard (Import mode, connected to Azure SQL)
-
-Orchestration: Apache Airflow (Docker Compose)
-```
-
 ![Architecture](docs/images/nhs_architecture.jpeg)
 
 ---
