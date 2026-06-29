@@ -333,8 +333,7 @@ The Power BI report (`powerbi/nhs_pca_dashboard.pbix`) connects to the `nhs-pca-
 ---
 
 ## Author
-
-**Rejisha Gopan Usha Kumari**
+*Rejisha Gopan Usha Kumari*
 ---
 
 *Data sourced from the [NHS Business Services Authority Open Data Portal](https://opendata.nhsbsa.net/) under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).*
