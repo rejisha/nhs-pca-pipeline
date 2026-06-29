@@ -71,8 +71,8 @@ def read_parquet_files_from_blob() -> pd.DataFrame:
     # List all blobs under silver/pca/ — filter to only .parquet files
     # (skip _delta_log JSON files)
     blobs = [
-        b.name for b in container_client.list_blobs(name_starts_with=SILVER_BLOB_PREFIX)
-        if b.name.endswith(".parquet")
+    b.name for b in container_client.list_blobs(name_starts_with=SILVER_BLOB_PREFIX)
+    if b.name.endswith(".parquet") and "_delta_log" not in b.name
     ]
 
     if not blobs:

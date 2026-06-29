@@ -6,6 +6,7 @@ Every transformation script imports from here.
 
 import os
 import sys
+import platform
 import logging
 
 from pyspark.sql import SparkSession
@@ -13,16 +14,15 @@ from pyspark.sql import SparkSession
 # Fix for Windows — must be set before SparkSession is created
 os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
-os.environ["JAVA_HOME"] = r"C:\Program Files\Java\jdk-21"
-os.environ["HADOOP_HOME"] = r"C:\hadoop"
 
-# Add Java and Hadoop to PATH so Spark can find them
-os.environ["PATH"] = (
-    r"C:\Program Files\Java\jdk-21\bin" + os.pathsep +
-    r"C:\hadoop\bin" + os.pathsep + 
-    os.environ.get("PATH", "")
-)
-
+if platform.system() == "Windows":
+    os.environ["JAVA_HOME"] = r"C:\Program Files\Java\jdk-21"
+    os.environ["HADOOP_HOME"] = r"C:\hadoop"
+    os.environ["PATH"] = (
+        r"C:\Program Files\Java\jdk-21\bin" + os.pathsep +
+        r"C:\hadoop\bin" + os.pathsep +
+        os.environ.get("PATH", "")
+    )
 logger = logging.getLogger(__name__)
 
 def get_spark_session(app_name: str = "NHS_Prescribing_Pipeline") -> SparkSession:

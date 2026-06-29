@@ -23,6 +23,8 @@ from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
 
+from azure.storage.blob import BlobServiceClient
+
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.types import IntegerType, DoubleType, LongType
@@ -44,15 +46,61 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-BRONZE_PATH = Path(__file__).parent.parent / "data" / "raw" 
+# BRONZE_PATH = Path(__file__).parent.parent / "data" / "raw" 
 # SILVER_PATH = Path(__file__).parent.parent / "data" / "silver" / "pca"
 
+# Bronze read from Azure Blob Storage 
+BRONZE_BLOB_PREFIX = "bronze/pca/"
+
+CONNECTION_STRING = os.getenv("BLOB_CONN_STRING")
 STORAGE_ACCOUNT = os.getenv("BLOB_STORAGE_NAME")   
 STORAGE_KEY     = os.getenv("BLOB_ACCOUNT_KEY")    
 CONTAINER_NAME  = os.getenv("CONTAINER_NAME", "nhs-pipeline")
 
 # wasbs:// is the Azure Blob protocol PySpark understands
 SILVER_PATH = f"wasbs://{CONTAINER_NAME}@{STORAGE_ACCOUNT}.blob.core.windows.net/silver/pca"
+
+
+def configure_spark_blob_auth(spark: SparkSession) -> None:
+    """
+    Configure Spark's Hadoop filesystem layer to authenticate with
+    Azure Blob Storage. Must be called BEFORE any read or write that
+    touches wasbs:// paths (both Bronze reads and Silver writes need this).
+    """
+    spark.conf.set(
+        f"fs.azure.account.key.{STORAGE_ACCOUNT}.blob.core.windows.net",
+        STORAGE_KEY
+    )
+
+def list_bronze_files_from_blob() -> list[str]:
+    """
+    List all Bronze PCA CSV files in Azure Blob Storage and return
+    their full wasbs:// paths, ready for Spark to read directly.
+    """
+    logger.info(f"Listing Bronze CSV files from Blob: {BRONZE_BLOB_PREFIX}")
+
+    blob_service_client = BlobServiceClient.from_connection_string(CONNECTION_STRING)
+    container_client = blob_service_client.get_container_client(CONTAINER_NAME)
+
+    blob_names = [
+        b.name for b in container_client.list_blobs(name_starts_with=BRONZE_BLOB_PREFIX)
+        if b.name.endswith(".csv")
+    ]
+
+    if not blob_names:
+        logger.warning(f"No Bronze CSV files found under '{BRONZE_BLOB_PREFIX}' in container '{CONTAINER_NAME}'")
+        return []
+
+    wasbs_paths = [
+        f"wasbs://{CONTAINER_NAME}@{STORAGE_ACCOUNT}.blob.core.windows.net/{name}"
+        for name in blob_names
+    ]
+
+    logger.info(f"Found {len(wasbs_paths)} Bronze CSV files in Blob Storage")
+    for p in wasbs_paths:
+        logger.info(f"  - {p}")
+
+    return wasbs_paths
 
 # Step 1: Read raw CSV files from Bronze layer
 def read_raw_data(spark: SparkSession, file_path: Path) -> DataFrame:
@@ -319,16 +367,11 @@ def write_silver_delta(df: DataFrame, spark: SparkSession, output_path: str) -> 
     Writes cleaned DataFrame to Silver as Delta Lake format on Azure Blob,
     partitioned by year and month.
     """
-
-    # Tell Spark how to authenticate with Azure Blob Storage
-    # This must be set on the SparkContext before any Blob write
-    spark.conf.set(
-        f"fs.azure.account.key.{STORAGE_ACCOUNT}.blob.core.windows.net",
-        STORAGE_KEY
-    )
-
+    # spark.conf.set(
+    #     f"fs.azure.account.key.{STORAGE_ACCOUNT}.blob.core.windows.net",
+    #     STORAGE_KEY
+    # )
     logger.info(f"Writing Silver Delta Lake to Azure Blob: {output_path}")
-
     (
         df.write
         .format("delta")
@@ -337,27 +380,32 @@ def write_silver_delta(df: DataFrame, spark: SparkSession, output_path: str) -> 
         .partitionBy("year", "month")
         .save(output_path)
     )
-
     logger.info(f"Silver write complete: {output_path}")
+
+    # Clean up old data files that Delta has logically removed,
+    # so raw blob listing doesn't pick up stale parquet files.
+    from delta.tables import DeltaTable
+    spark.conf.set("spark.databricks.delta.retentionDurationCheck.enabled", "false")
+    delta_table = DeltaTable.forPath(spark, output_path)
+    delta_table.vacuum(0)  # 0 hours retention — safe here since it always rewrite fresh each run
+    logger.info(f"VACUUM complete: removed stale files from {output_path}")
 
 
 
 # Main function to run the full Bronze -> Silver transformation
 def run_silver_transform(bronze_files: list = None) -> bool:
-    """
-    Main entry point. Runs the full Bronze -> Silver transformation.
-
-    """
+    
     spark = get_spark_session("NHS_PCA_Silver_Transform")
     all_success = True
 
     try:
-        # If no specific files given, find all PCA CSVs in Bronze folder
+        configure_spark_blob_auth(spark)
+
         if bronze_files is None:
-            bronze_files = [str(p) for p in BRONZE_PATH.glob("PCA_*.csv")]
+            bronze_files = list_bronze_files_from_blob()
 
         if not bronze_files:
-            logger.warning(f"No Bronze files found in {BRONZE_PATH}")
+            logger.warning(f"No Bronze files found in Blob Storage under '{BRONZE_BLOB_PREFIX}'")
             logger.warning("Run run_ingestion.py first to download NHS data")
             return False
 
