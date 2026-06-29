@@ -1,6 +1,6 @@
 # NHS Prescription Cost Analysis Pipeline
 
-> An end-to-end ELT data engineering portfolio project processing **3.4M+ rows** of NHS prescription data (~**£2.85bn** in spend) using a cloud-native Medallion architecture on Azure.
+> An end-to-end ELT data engineering portfolio project processing **3.4M+ rows** of NHS prescription data (**£2.85bn** in spend) using a cloud-native Medallion architecture on Azure.
 
 ---
 
@@ -26,7 +26,7 @@ The pipeline ingests raw CSVs from the NHSBSA Open Data Portal, transforms them 
 
 **Key metrics:**
 - 3.4M+ rows of prescription data processed
-- ~£2.85bn in total prescription spend analysed
+- £2.85bn in total prescription spend analysed
 - Medallion architecture (Bronze / Silver / Gold)
 - Kimball star schema in the Gold layer
 - Fully orchestrated via Apache Airflow DAG
