@@ -258,13 +258,13 @@ The pipeline is fully orchestrated via Airflow. You can also run each stage manu
 run_ingestion → run_silver → load_silver_to_sql → dbt_run → dbt_test
 ```
 
-| Task | Script | Description |
-|---|---|---|
-| `run_ingestion` | `pipeline/ingestion/ingest.py` | Downloads monthly CSVs from NHSBSA API → writes to Bronze Delta Lake on Azure Blob |
-| `run_silver` | `pipeline/silver/transform_silver.py` | Reads Bronze Delta → cleans, casts types, deduplicates → writes Silver Delta |
-| `load_silver_to_sql` | `pipeline/gold/load_silver_to_sql.py` | Reads Silver Delta → loads into Azure SQL staging tables |
-| `dbt_run` | dbt models | Builds Gold star schema (`dim_bnf`, `dim_region`, `dim_time`, `fact_prescriptions`) |
-| `dbt_test` | dbt tests | Runs data quality tests (not-null, unique, referential integrity) |
+| Script | Description |
+|---|---|
+| `run ingestion.py`| Downloads monthly CSVs from NHSBSA API → writes to Bronze Delta Lake on Azure Blob |
+| `run silver.py` | Reads Bronze Delta → cleans, casts types, deduplicates → writes Silver Delta |
+| `load_silver_to_sql.py` | Reads Silver Delta → loads into Azure SQL staging tables |
+| `dbt_run` | Builds Gold star schema (`dim_bnf`, `dim_region`, `dim_time`, `fact_prescriptions`) |
+| `dbt_test` | Runs data quality tests (not-null, unique, referential integrity) |
 
 ### Run stages manually
 
