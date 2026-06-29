@@ -88,7 +88,7 @@ nhs-pca-pipeline/
 
 ## Dataset
 
-**Source:** [NHSBSA Open Data Portal — Prescription Cost Analysis](https://opendata.nhsbsa.net/dataset/prescription-cost-analysis-pca-monthly-data)
+**Source:** [NHSBSA Open Data Portal - Prescription Cost Analysis](https://opendata.nhsbsa.net/dataset/prescription-cost-analysis-pca-monthly-data)
 
 The NHSBSA publishes monthly PCA data as CSV files detailing every prescription dispensed in England, broken down by BNF (British National Formulary) code, dispensing contractor, and NHS region.
 
@@ -107,7 +107,7 @@ The NHSBSA publishes monthly PCA data as CSV files detailing every prescription 
 | `ACTUAL_COST` | Actual cost to NHS (£) |
 
 **How data is fetched:**
-The pipeline uses the NHSBSA API to dynamically discover available months and download the corresponding CSV resources — no hardcoded URLs.
+The pipeline uses the NHSBSA API to dynamically discover available months and download the corresponding CSV resources - no hardcoded URLs.
 
 > ⚠️ Monthly files can be large. Ensure you have sufficient Azure Blob Storage capacity and local bandwidth when running ingestion for multiple months.
 
@@ -133,10 +133,10 @@ The pipeline uses the NHSBSA API to dynamically discover available months and do
 
 ### System Requirements
 
-- Windows 10/11 (or Linux/macOS — note Windows-specific paths in `spark_session.py`)
+- Windows 10/11 (or Linux/macOS - note Windows-specific paths in `spark_session.py`)
 - Docker Desktop (with WSL2 backend on Windows)
 - Python 3.10+
-- Java 11+ (required for PySpark — `default-jre-headless` installed in Docker image)
+- Java 11+ (required for PySpark - `default-jre-headless` installed in Docker image)
 - Power BI Desktop (Windows only)
 
 ### Azure Resources Required
