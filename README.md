@@ -53,7 +53,7 @@ The pipeline ingests raw CSVs from the NHSBSA Open Data Portal, transforms them 
 Orchestration: Apache Airflow (Docker Compose)
 ```
 
-![Architecture](docs\images\nhs_architecture.jpeg>)
+![Architecture](docs/images/nhs_architecture.jpeg)
 
 ---
 
@@ -328,7 +328,7 @@ The Power BI report (`powerbi/nhs_pca_dashboard.pbix`) connects to the `nhs-pca-
 - Monthly prescription cost trend (line chart)
 - Cost by NHS region (bar chart)
 
-![Power BI Dashboard](docs\images\nhs_pca_powerbi.png)
+![Power BI Dashboard](docs/images/nhs_pca_powerbi.png)
 
 ---
 
