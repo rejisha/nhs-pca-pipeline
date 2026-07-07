@@ -237,7 +237,7 @@ The pipeline is fully orchestrated via Airflow. You can also run each stage manu
 4. Monitor the five tasks in sequence:
 
 ```
-run_ingestion → run_silver → load_silver_to_sql → dbt_run → dbt_test
+run_ingestion -> run_silver -> load_silver_to_sql -> dbt_run -> dbt_test
 ```
 
 | Script | Description |
@@ -267,7 +267,7 @@ python load_silver_to_sql.py
 
 **dbt Gold models:**
 ```bash
-cd dbt
+cd gold
 dbt deps          # Install dbt packages (run before first dbt run and after clearing dbt_packages/)
 dbt run           # Build Gold models
 dbt test          # Run data quality tests
