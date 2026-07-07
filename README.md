@@ -239,7 +239,7 @@ The pipeline is fully orchestrated via Airflow. You can also run each stage manu
 4. Monitor the five tasks in sequence:
 
 ```
-run_ingestion → run_silver → load_silver_to_sql → dbt_run → dbt_test
+run_ingestion -> run_silver -> load_silver_to_sql -> dbt_run -> dbt_test
 ```
 
 | Script | Description |
