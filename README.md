@@ -1,6 +1,6 @@
 # NHS Prescription Cost Analysis Pipeline
 
-> An end-to-end ELT data engineering portfolio project processing **3.4M+ rows** of NHS prescription data (~**£2.85bn** in spend) using a cloud-native Medallion architecture on Azure.
+> An end-to-end ELT data engineering portfolio project processing **3.4M+ rows** of NHS prescription data (**£2.85bn** in spend) using a cloud-native Medallion architecture on Azure.
 
 ---
 
@@ -26,7 +26,7 @@ The pipeline ingests raw CSVs from the NHSBSA Open Data Portal, transforms them 
 
 **Key metrics:**
 - 3.4M+ rows of prescription data processed
-- ~£2.85bn in total prescription spend analysed
+- £2.85bn in total prescription spend analysed
 - Medallion architecture (Bronze / Silver / Gold)
 - Kimball star schema in the Gold layer
 - Fully orchestrated via Apache Airflow DAG
@@ -34,24 +34,6 @@ The pipeline ingests raw CSVs from the NHSBSA Open Data Portal, transforms them 
 ---
 
 ## Architecture
-
-```
-[ NHSBSA Open Data Portal ]
-           │
-           ▼
-   [ Bronze Layer ]  ── Raw CSV → Delta Lake on Azure Blob Storage
-           │
-           ▼
-   [ Silver Layer ]  ── Cleaned & typed → Delta Lake on Azure Blob Storage
-           │
-           ▼
-   [ Gold Layer ]    ── Star schema → Azure SQL Database (dbt models)
-           │
-           ▼
-   [ Power BI ]      ── Dashboard (Import mode, connected to Azure SQL)
-
-Orchestration: Apache Airflow (Docker Compose)
-```
 
 ![Architecture](docs/images/nhs_architecture.jpeg)
 
@@ -106,7 +88,7 @@ nhs-pca-pipeline/
 
 ## Dataset
 
-**Source:** [NHSBSA Open Data Portal — Prescription Cost Analysis](https://opendata.nhsbsa.net/dataset/prescription-cost-analysis-pca-monthly-data)
+**Source:** [NHSBSA Open Data Portal - Prescription Cost Analysis](https://opendata.nhsbsa.net/dataset/prescription-cost-analysis-pca-monthly-data)
 
 The NHSBSA publishes monthly PCA data as CSV files detailing every prescription dispensed in England, broken down by BNF (British National Formulary) code, dispensing contractor, and NHS region.
 
@@ -125,7 +107,7 @@ The NHSBSA publishes monthly PCA data as CSV files detailing every prescription 
 | `ACTUAL_COST` | Actual cost to NHS (£) |
 
 **How data is fetched:**
-The pipeline uses the NHSBSA API to dynamically discover available months and download the corresponding CSV resources — no hardcoded URLs.
+The pipeline uses the NHSBSA API to dynamically discover available months and download the corresponding CSV resources - no hardcoded URLs.
 
 > ⚠️ Monthly files can be large. Ensure you have sufficient Azure Blob Storage capacity and local bandwidth when running ingestion for multiple months.
 
@@ -151,10 +133,10 @@ The pipeline uses the NHSBSA API to dynamically discover available months and do
 
 ### System Requirements
 
-- Windows 10/11 (or Linux/macOS — note Windows-specific paths in `spark_session.py`)
+- Windows 10/11 (or Linux/macOS - note Windows-specific paths in `spark_session.py`)
 - Docker Desktop (with WSL2 backend on Windows)
 - Python 3.10+
-- Java 11+ (required for PySpark — `default-jre-headless` installed in Docker image)
+- Java 11+ (required for PySpark - `default-jre-headless` installed in Docker image)
 - Power BI Desktop (Windows only)
 
 ### Azure Resources Required
@@ -333,8 +315,7 @@ The Power BI report (`powerbi/nhs_pca_dashboard.pbix`) connects to the `nhs-pca-
 ---
 
 ## Author
-
-**Rejisha Gopan Usha Kumari**
+*Rejisha Gopan Usha Kumari*
 ---
 
 *Data sourced from the [NHS Business Services Authority Open Data Portal](https://opendata.nhsbsa.net/) under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).*
