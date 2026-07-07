@@ -38,6 +38,7 @@ data/
 test*
 /test_*
 test_*.py
+documents
 
 # OS files
 .DS_Store
