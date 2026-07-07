@@ -197,7 +197,6 @@ Set-Content -Encoding ascii .env @"
 BLOB_CONN_STRING=your_azure_storage_connection_string
 BLOB_STORAGE_NAME=your_storage_account_name
 BLOB_ACCOUNT_KEY=your_storage_account_key
-CONTAINER_NAME=nhs-pipeline
 SQL_SERVER=your-server.database.windows.net
 SQL_DATABASE=nhs-pca-gold
 SQL_USERNAME=your-sql-admin
