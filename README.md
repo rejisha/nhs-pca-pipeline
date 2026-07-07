@@ -244,8 +244,8 @@ run_ingestion -> run_silver -> load_silver_to_sql -> dbt_run -> dbt_test
 | Script | Description |
 |---|---|
 | `run_ingestion.py`| Downloads monthly CSVs from NHSBSA API → uploads raw CSVs to Bronze on Azure Blob |
-| `run_silver.py` | Reads Bronze CSVs from Blob → cleans, casts types, deduplicates → writes Silver Delta Lake |
-| `load_silver_to_sql.py` | Reads Silver Delta → loads into Azure SQL staging tables |
+| `run_silver.py` | Reads Bronze CSVs from Blob -> cleans, casts types, deduplicates -> writes Silver Delta Lake |
+| `load_silver_to_sql.py` | Reads Silver Delta -> loads into Azure SQL staging tables |
 | `dbt_run` | Builds Gold star schema (`dim_bnf`, `dim_region`, `dim_time`, `fact_prescriptions`) |
 | `dbt_test` | Runs data quality tests (not-null, unique, referential integrity) |
 
@@ -261,7 +261,7 @@ python run_ingestion.py
 python run_silver.py
 ```
 
-**Load Silver → Azure SQL:**
+**Load Silver -> Azure SQL:**
 ```bash
 python load_silver_to_sql.py
 ```
@@ -278,9 +278,9 @@ dbt test          # Run data quality tests
 
 ```
 fact_prescriptions
- ├── bnf_id       → dim_bnf
- ├── region_id    → dim_region
- └── period       → dim_time
+ ├── bnf_id       -> dim_bnf
+ ├── region_id    -> dim_region
+ └── period       -> dim_time
 ```
 
 | Table 
