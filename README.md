@@ -97,14 +97,14 @@ The NHSBSA publishes monthly PCA data as CSV files detailing every prescription 
 | Field | Description |
 |---|---|
 | `YEAR_MONTH` | Period (YYYYMM format) |
-| `REGIONAL_OFFICE_NAME` | NHS regional office |
-| `ICB_NAME` | Integrated Care Board name |
+| `REGION_NAME` | NHS region |
+| `ICB_NAME` / `ICB_CODE` | Integrated Care Board |
 | `BNF_CHEMICAL_SUBSTANCE` | Drug chemical substance |
-| `BNF_DESCRIPTION` | BNF product description |
-| `BNF_CODE` | 15-character BNF code |
+| `BNF_PRESENTATION_NAME` | Drug presentation name |
+| `BNF_PRESENTATION_CODE` | 15-character BNF presentation code |
 | `ITEMS` | Number of prescription items |
-| `QUANTITY` | Total quantity dispensed |
-| `ACTUAL_COST` | Actual cost to NHS (£) |
+| `TOTAL_QUANTITY` | Total quantity dispensed |
+| `NIC` | Net Ingredient Cost (£) |
 
 **How data is fetched:**
 The pipeline uses the NHSBSA API to dynamically discover available months and download the corresponding CSV resources - no hardcoded URLs.
@@ -194,12 +194,14 @@ cd nhs-pca-pipeline
 
 ```powershell
 Set-Content -Encoding ascii .env @"
-AZURE_STORAGE_CONNECTION_STRING=your_connection_string_here
-AZURE_STORAGE_CONTAINER=your_container_name
-AZURE_SQL_SERVER=nhs-pca-server.database.windows.net
-AZURE_SQL_DATABASE=nhs-pca-gold
-AZURE_SQL_USERNAME=nhs-pca-admin
-AZURE_SQL_PASSWORD=your_password_here
+BLOB_CONN_STRING=your_azure_storage_connection_string
+BLOB_STORAGE_NAME=your_storage_account_name
+BLOB_ACCOUNT_KEY=your_storage_account_key
+CONTAINER_NAME=nhs-pipeline
+SQL_SERVER=your-server.database.windows.net
+SQL_DATABASE=nhs-pca-gold
+SQL_USERNAME=your-sql-admin
+SQL_PASSWORD=your_password_here
 "@
 ```
 
@@ -242,8 +244,8 @@ run_ingestion → run_silver → load_silver_to_sql → dbt_run → dbt_test
 
 | Script | Description |
 |---|---|
-| `run ingestion.py`| Downloads monthly CSVs from NHSBSA API → writes to Bronze Delta Lake on Azure Blob |
-| `run silver.py` | Reads Bronze Delta → cleans, casts types, deduplicates → writes Silver Delta |
+| `run_ingestion.py`| Downloads monthly CSVs from NHSBSA API → uploads raw CSVs to Bronze on Azure Blob |
+| `run_silver.py` | Reads Bronze CSVs from Blob → cleans, casts types, deduplicates → writes Silver Delta Lake |
 | `load_silver_to_sql.py` | Reads Silver Delta → loads into Azure SQL staging tables |
 | `dbt_run` | Builds Gold star schema (`dim_bnf`, `dim_region`, `dim_time`, `fact_prescriptions`) |
 | `dbt_test` | Runs data quality tests (not-null, unique, referential integrity) |
@@ -267,7 +269,7 @@ python load_silver_to_sql.py
 
 **dbt Gold models:**
 ```bash
-cd dbt
+cd gold
 dbt deps          # Install dbt packages (run before first dbt run and after clearing dbt_packages/)
 dbt run           # Build Gold models
 dbt test          # Run data quality tests
@@ -299,9 +301,9 @@ The Power BI report (`powerbi/nhs_pca_dashboard.pbix`) connects to the `nhs-pca-
 
 | Measure | Formula |
 |---|---|
-| Total Cost | `SUM(fact_prescriptions[actual_cost])` |
-| Total Items | `SUM(fact_prescriptions[items])` |
-| Total Quantity | `SUM(fact_prescriptions[quantity])` |
+| Total Cost | `SUM(fact_prescriptions[net_ingredient_cost])` |
+| Total Items | `SUM(fact_prescriptions[items_prescribed])` |
+| Total Quantity | `SUM(fact_prescriptions[total_quantity])` |
 | Avg Cost Per Item | `DIVIDE([Total Cost], [Total Items])` |
 | Number of Regions | `DISTINCTCOUNT(fact_prescriptions[region_id])` |
 
