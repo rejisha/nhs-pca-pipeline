@@ -1,6 +1,6 @@
 # NHS Prescription Cost Analysis Pipeline
 
-> An end-to-end ELT data engineering portfolio project processing **6.7M+ rows** of NHS prescription data (**£11.71bn** in spend) across 12 months (Jun 2025–May 2026) using a cloud-native Medallion architecture on Azure.
+> An end-to-end ELT data engineering portfolio project processing **6.7M+ rows** of NHS prescription data (**£11.71bn** in spend) across 12 months (Jun 2025 - May 2026) using a cloud-native Medallion architecture on Azure.
 
 ---
 
