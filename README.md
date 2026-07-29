@@ -300,11 +300,11 @@ The Power BI report (`powerbi/nhs_pca_dashboard.pbix`) connects to the `nhs-pca-
 **DAX measures:**
 | Measure | Formula |
 |---|---|
-| Total Cost | `SUM(fact_prescriptions[net_ingredient_cost])` |
-| Total Items | `SUM(fact_prescriptions[items_prescribed])` |
-| Total Quantity | `SUM(fact_prescriptions[total_quantity])` |
+| Total Cost | `SUM('gold fact_prescriptions'[net_ingredient_cost])` |
+| Total Items | `SUM('gold fact_prescriptions'[items_prescribed])` |
+| Total Quantity | `SUM('gold fact_prescriptions'[total_quantity])` |
 | Avg Cost Per Item | `DIVIDE([Total Cost], [Total Items])` |
-| Number of Regions | `DISTINCTCOUNT(fact_prescriptions[region_id])` |
+| Number of Regions | `DISTINCTCOUNT('gold fact_prescriptions'[region_id])` |
 | MoM % Change | See full DAX below - dynamically finds the latest two periods by key, not text sort |
 | MoM % Change Label | Formats the comparison for display, e.g. "MoM % Change (Apr->May 2026)" |
 
