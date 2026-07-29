@@ -305,8 +305,8 @@ The Power BI report (`powerbi/nhs_pca_dashboard.pbix`) connects to the `nhs-pca-
 | Total Quantity | `SUM(fact_prescriptions[total_quantity])` |
 | Avg Cost Per Item | `DIVIDE([Total Cost], [Total Items])` |
 | Number of Regions | `DISTINCTCOUNT(fact_prescriptions[region_id])` |
-| MoM % Change | See full DAX below — dynamically finds the latest two periods by key, not text sort |
-| MoM % Change Label | Formats the comparison for display, e.g. "MoM % Change (Apr→May 2026)" |
+| MoM % Change | See full DAX below - dynamically finds the latest two periods by key, not text sort |
+| MoM % Change Label | Formats the comparison for display, e.g. "MoM % Change (Apr->May 2026)" |
 
 **`MoM % Change` (full definition):**
 ```dax
