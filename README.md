@@ -1,6 +1,6 @@
 # NHS Prescription Cost Analysis Pipeline
 
-> An end-to-end ELT data engineering portfolio project processing **3.4M+ rows** of NHS prescription data (**£2.85bn** in spend) using a cloud-native Medallion architecture on Azure.
+> An end-to-end ELT data engineering portfolio project processing **6.7M+ rows** of NHS prescription data (**£11.71bn** in spend) across 12 months (Jun 2025–May 2026) using a cloud-native Medallion architecture on Azure.
 
 ---
 
@@ -25,8 +25,9 @@ This project builds a production-style ELT pipeline on Azure to process NHS Pres
 The pipeline ingests raw CSVs from the NHSBSA Open Data Portal, transforms them through Bronze -> Silver -> Gold layers using PySpark and dbt, orchestrates everything with Apache Airflow, and surfaces insights through a Power BI dashboard.
 
 **Key metrics:**
-- 3.4M+ rows of prescription data processed
-- £2.85bn in total prescription spend analysed
+- 6.7M+ rows of prescription data processed
+- £11.71bn in total prescription spend analysed
+- 12 months of data (Jun 2025 - May 2026), including the April 2026 NHS ICB restructuring
 - Medallion architecture (Bronze / Silver / Gold)
 - Kimball star schema in the Gold layer
 - Fully orchestrated via Apache Airflow DAG
@@ -297,7 +298,6 @@ fact_prescriptions
 The Power BI report (`powerbi/nhs_pca_dashboard.pbix`) connects to the `nhs-pca-gold` Azure SQL database in **Import mode**.
 
 **DAX measures:**
-
 | Measure | Formula |
 |---|---|
 | Total Cost | `SUM(fact_prescriptions[net_ingredient_cost])` |
@@ -305,6 +305,31 @@ The Power BI report (`powerbi/nhs_pca_dashboard.pbix`) connects to the `nhs-pca-
 | Total Quantity | `SUM(fact_prescriptions[total_quantity])` |
 | Avg Cost Per Item | `DIVIDE([Total Cost], [Total Items])` |
 | Number of Regions | `DISTINCTCOUNT(fact_prescriptions[region_id])` |
+| MoM % Change | See full DAX below — dynamically finds the latest two periods by key, not text sort |
+| MoM % Change Label | Formats the comparison for display, e.g. "MoM % Change (Apr→May 2026)" |
+
+**`MoM % Change` (full definition):**
+```dax
+MoM % Change = 
+VAR CurrentPeriod = CALCULATE(MAX('gold dim_time'[period]), ALL('gold dim_time'))
+VAR CurrentCost = 
+    CALCULATE(
+        SUM('gold fact_prescriptions'[net_ingredient_cost]),
+        FILTER(ALL('gold dim_time'), 'gold dim_time'[period] = CurrentPeriod)
+    )
+VAR PreviousPeriod = 
+    CALCULATE(
+        MAX('gold dim_time'[period]),
+        FILTER(ALL('gold dim_time'), 'gold dim_time'[period] < CurrentPeriod)
+    )
+VAR PreviousCost = 
+    CALCULATE(
+        SUM('gold fact_prescriptions'[net_ingredient_cost]),
+        FILTER(ALL('gold dim_time'), 'gold dim_time'[period] = PreviousPeriod)
+    )
+RETURN
+    DIVIDE(CurrentCost - PreviousCost, PreviousCost)
+```
 
 **Visuals included:**
 - KPI cards: Total Cost (£), Total Items, Avg Cost Per Item, Number of Regions
